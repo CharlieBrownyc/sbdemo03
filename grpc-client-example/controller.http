@@ -1,0 +1,3 @@
+### 회원 조회 요청 (ID: 1)
+GET http://localhost:8091/api/members/1
+Content-Type: application/json

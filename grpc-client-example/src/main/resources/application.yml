@@ -1,0 +1,44 @@
+server:
+  port: 8091 # 클라이언트 포트
+
+app:
+  server:
+    type: CLIENT_SERVER  # 또는 RESOURCE_SERVER
+    id: client-server-1  # 또는 resource-server-1
+
+spring:
+  application:
+    name: grpc-client-server
+
+#resilience4j:
+#  circuitbreaker:
+#    instances:
+#      member-service:
+#        slidingWindowType: COUNT_BASED
+#        slidingWindowSize: 10
+#        failureRateThreshold: 50
+#        waitDurationInOpenState: 5s
+#        permittedNumberOfCallsInHalfOpenState: 5
+#        automaticTransitionFromOpenToHalfOpenEnabled: true
+#        recordExceptions:
+#          - feign.FeignException
+#          - java.net.ConnectException
+#          - java.lang.RuntimeException
+
+grpc:
+  client:
+    default:
+      address: static://localhost:50051
+      negotiationType: PLAINTEXT
+    member-service:
+      address: static://localhost:50051
+      negotiationType: PLAINTEXT
+  server:
+    enabled: false  # 서버 기능을 비활성화
+
+feign:
+  client:
+    config:
+      default:
+        connectTimeout: 5000
+        readTimeout: 5000

@@ -1,0 +1,9 @@
+### 멤버 생성
+POST http://localhost:8090/api/members
+Content-Type: application/json
+
+{
+  "name": "test@example.com",
+  "email": "test@example.com",
+  "password": "password123"
+}
