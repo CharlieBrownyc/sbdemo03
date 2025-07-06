@@ -1,4 +1,0 @@
-rootProject.name = 'grpc-multimodule-demo'
-include('module-core')
-include('module-api')
-include('module-mapper')

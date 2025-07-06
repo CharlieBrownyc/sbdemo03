@@ -1,9 +1,0 @@
-// 패키징
-bootJar.enabled = true
-jar.enabled = false
-
-dependencies {
-    implementation project(':module-core')
-    implementation project(':module-mapper')
-    implementation 'org.springframework.boot:spring-boot-starter-web'
-}

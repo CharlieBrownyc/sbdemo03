@@ -1,8 +1,0 @@
-// 패키징
-bootJar.enabled = false
-jar.enabled = true
-
-dependencies {
-    implementation project(':module-core')
-    implementation 'org.springframework.boot:spring-boot-starter'
-}
