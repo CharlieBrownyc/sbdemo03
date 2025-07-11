@@ -1,0 +1,60 @@
+services:
+  db_mysql:
+    image: mysql:8.4.5
+    environment:
+      MYSQL_ROOT_PASSWORD: ${MYSQL_ROOT_PASSWORD}
+      MYSQL_DATABASE: scott
+    ports:
+      - "3306:3306"
+    volumes:
+      - db_vol:/var/lib/mysql
+      - ./mysql-init/user:/docker-entrypoint-initdb.d
+    restart: always
+    networks:
+      - sb_network
+
+  redis_sb:
+    hostname: redis_sb
+    container_name: redis_sb
+    image: redis:6
+    ports:
+      - "6379:6379"
+    networks:
+      - sb_network
+
+  elasticsearch:
+    image: elasticsearch:7.17.28
+    container_name: es
+    ports:
+      - "9200:9200"
+    environment:
+      - node.name=es_lecture
+      - discovery.type=single-node
+      - xpack.security.enabled=false
+    networks:
+      - sb_network
+    ulimits:
+      memlock:
+        soft: -1
+        hard: -1
+    volumes:
+      - es_data:/usr/share/elasticsearch/data
+  kibana:
+    image: kibana:7.17.28
+    container_name: kibana
+    ports:
+      - "5601:5601"
+    environment:
+      - ELASTICSEARCH_HOSTS=http://elasticsearch:9200
+    networks:
+      - sb_network
+    depends_on:
+      - elasticsearch
+
+volumes:
+  db_vol:
+  es_data:
+    driver: local
+
+networks:
+  sb_network:

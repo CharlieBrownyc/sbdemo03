@@ -1,33 +1,39 @@
 # ElasticSearch SpringBoot Example
 ## Getting Started
 
-### ElasticSearch Run
-docker-compose
-```yaml
-# pull elasticsearch
-docker pull elasticsearch:7.17.28
+### Pre-requisite
+[Elasticsearch + Kibana](./Elasticsearch.md)
 
-# make virtual network
-docker network create es_network
+### demo Test
+```shell
+# 데이터가 없을 때 조회
+curl.exe -X GET "http://localhost:8080/items/Item1"
+==> 빈값, HTTP_STATUS: 200
 
-# run container (ELASTIC_PASSWORD 환경변수에 비밀번호 입력)
-docker run -d --name elasticsearch --net es_network -p 9200:9200 -p 9300:9300 -e "discovery.type=single-node" -e "ELASTIC_PASSWORD=changeme!!!" elasticsearch:7.17.28
+# 생성 테스트
+curl.exe -X POST "http://localhost:8080/items/add" -H "Content-Type: application/json" -d "{\"itemId\":\"Item1\", \"price\":1000}"
+==> {"id":"Scykao0BVUDCbzWyyLnj","itemId":"Item1","price":1000}
 
-(test)
-curl localhost:9200
-(container shell)
-docker exec -it elasticsearch /bin/bash
+# 데이터가 있을 때 조회
+curl.exe -X GET "http://localhost:8080/items/Item1"
+==> {"id":"Scykao0BVUDCbzWyyLnj","itemId":"Item1","price":1000}
+
+# 수정 테스트
+curl.exe -X POST "http://localhost:8080/items/update/Item1" -H "Content-Type: application/json" -d "{\"price\":1200}"
+==> {"id":"Scykao0BVUDCbzWyyLnj","itemId":"Item1","price":1200}
+
+# 수정된 데이터 조회
+curl.exe -X GET "http://localhost:8080/items/Item1"
+==> {"id":"Scykao0BVUDCbzWyyLnj","itemId":"Item1","price":1200}
+
+# 삭제 테스트 
+curl.exe -X POST "http://localhost:8080/items/delete/Item1"
+==> 빈값, HTTP_STATUS: 200
+
+# 삭제된 데이터 조회
+curl.exe -X GET "http://localhost:8080/items/Item1"
+==> 빈값, HTTP_STATUS: 200
 ```
-kibana
-```yaml
-# pull kibana
-docker pull docker.elastic.co/kibana/kibana:7.17.28
-
-# run
-docker run -d --name kibana --net es_network -p 5601:5601 -e "ELASTICSEARCH_USERNAME=elastic", -e "ELASTICSEARCH_PASSWORD=changeme!!!" docker.elastic.co/kibana/kibana:7.17.28
-
-```
-
 ### Reference Documentation
 
 For further reference, please consider the following sections:

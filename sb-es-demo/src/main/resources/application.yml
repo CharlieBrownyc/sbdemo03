@@ -1,0 +1,8 @@
+spring:
+  elasticsearch:
+    uris: http://localhost:9200
+    username: elastic
+    password: changeme!!!
+
+server:
+  port: 8080
