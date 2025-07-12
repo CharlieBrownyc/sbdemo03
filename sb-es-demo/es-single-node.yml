@@ -1,0 +1,43 @@
+# docker-compose up
+# curl -X GET "localhost:9200/_cat/nodes?v&pretty"
+# curl -X GET "localhost:9200/_cat/nodes?v&pretty"
+# curl -X GET "localhost:9200/_cat/nodes?v&pretty"
+# kibana -> http://localhost:5601
+services:
+  elasticsearch:
+    image: elasticsearch:7.17.28
+    container_name: es
+    environment:
+      - node.name=es_lecture
+      - discovery.type=single-node
+      - xpack.security.enabled=false
+    ulimits:
+      memlock:
+        soft: -1
+        hard: -1
+    volumes:
+      - es_data:/usr/share/elasticsearch/data
+    ports:
+      - "9200:9200"
+    networks:
+      - sb_network
+
+  kibana:
+    image: kibana:7.17.28
+    container_name: kibana
+    ports:
+      - "5601:5601"
+    environment:
+      - ELASTICSEARCH_HOSTS=http://elasticsearch:9200
+    networks:
+      - sb_network
+    depends_on:
+      - elasticsearch
+
+volumes:
+  db_vol:
+  es_data:
+    driver: local
+
+networks:
+  sb_network:

@@ -1,5 +1,5 @@
 ### ElasticSearch Run
-docker-compose
+docker
 ```yaml
 # pull elasticsearch
 docker pull elasticsearch:7.17.28
@@ -76,6 +76,35 @@ curl localhost:5601/api/status
     (Delete)
     DELETE /items/_doc/1
     ```
+* docker-compose   
+  ```yaml
+  docker compose -f ./es-single-node.yml up
+  # build image
+  docker compose build <service>
+  # docker compose up <service>
+  docker compose up --build
+  # remove services(container, network, volume
+  docker compose down <service>
+  # stop services
+  docker compose stop <service>
+  # start services(stop->start)
+  docker compose start <service>
+  # restart
+  docker compose restart <service>
+  # chage active image
+  docker compose build <service>
+  docker compose restart <service>
+  # list container
+  docker compose ps
+  # log
+  docker compose logs <service>
+  # command to container
+  # get container_id -> docker ps
+  # -i (interactive ) / -t (transfer to terminal)
+  docker exec <container_id/name> <command>
+  # view configuration or env variable ex) $PATH
+  docker exec config <service>
+  ```
 
 * reference
   * [SpringBoot+ES](https://blog.naver.com/wideeyed/223341372809)
