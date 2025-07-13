@@ -1,4 +1,4 @@
-# docker-compose up
+# docker compose -f ./es-single-node-kibana.yml up
 # curl -X GET "localhost:9200/_cat/nodes?v&pretty"
 # curl -X GET "localhost:9200/_cat/nodes?v&pretty"
 # curl -X GET "localhost:9200/_cat/nodes?v&pretty"
@@ -9,17 +9,17 @@ services:
     container_name: es
     environment:
       - node.name=es_lecture
-      - discovery.type=single-node
-      - xpack.security.enabled=false
+      - discovery.type=single-node  # 단일 노드
+      - xpack.security.enabled=false  # Xpack 보안 기능과 SSL설정을 비활성화 for local
     ulimits:
-      memlock:
+      memlock:  # 메모리 락 한도 설정 (-1은 무제한)
         soft: -1
         hard: -1
-    volumes:
+    volumes:    # 컨테이너 <-> 호스트 간 데이터 저장,공유
       - es_data:/usr/share/elasticsearch/data
     ports:
       - "9200:9200"
-    networks:
+    networks:   # 서비스들 통신
       - sb_network
 
   kibana:
@@ -28,10 +28,10 @@ services:
     ports:
       - "5601:5601"
     environment:
-      - ELASTICSEARCH_HOSTS=http://elasticsearch:9200
+      - ELASTICSEARCH_HOSTS=http://elasticsearch:9200 # 서비스이름:포트
     networks:
       - sb_network
-    depends_on:
+    depends_on: # 서비스 종속
       - elasticsearch
 
 volumes:

@@ -18,6 +18,9 @@ curl.exe -X POST "http://localhost:8080/items/add" -H "Content-Type: application
 curl.exe -X GET "http://localhost:8080/items/Item1"
 ==> {"id":"Scykao0BVUDCbzWyyLnj","itemId":"Item1","price":1000}
 
+# 모든 데이터
+curl.exe -X GET "http://localhost:8080/items/list"
+
 # 수정 테스트
 curl.exe -X POST "http://localhost:8080/items/update/Item1" -H "Content-Type: application/json" -d "{\"price\":1200}"
 ==> {"id":"Scykao0BVUDCbzWyyLnj","itemId":"Item1","price":1200}

@@ -6,7 +6,10 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
+import java.util.List;
 import java.util.Optional;
+import java.util.stream.Collectors;
+import java.util.stream.StreamSupport;
 
 @Service
 public class ItemService {
@@ -24,6 +27,11 @@ public class ItemService {
 
     public Optional<Item> getItemByItemId(String itemId) { // READ(읽기) 서비스
         return itemRepository.findByItemId(itemId);
+    }
+
+    public List<Item> getItemList(){
+        return StreamSupport.stream(itemRepository.findAll().spliterator(), false)
+                .collect(Collectors.toList());
     }
 
     public Item updateItem(String itemId, Item updatedItem) { // UPDATE(수정) 서비스

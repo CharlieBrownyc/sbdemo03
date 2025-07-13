@@ -7,6 +7,8 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
+import java.util.List;
+
 @RestController
 @RequestMapping("/items")
 public class ItemController {
@@ -23,6 +25,11 @@ public class ItemController {
     @GetMapping("/{itemId}")
     public Item getItem(@PathVariable String itemId) {
         return itemService.getItemByItemId(itemId).orElse(null);
+    }
+
+    @GetMapping("/list")
+    public List<Item> getList(){
+        return itemService.getItemList();
     }
 
 

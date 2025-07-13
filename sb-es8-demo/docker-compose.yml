@@ -1,0 +1,58 @@
+# progress order
+# docker compose -f [./파일명.yml] up  # 기본 docker-compose.yml
+# http://localhost:9200
+# http://localhost:5601
+# install Nori : 한글 형태소 분석기(feat.kakao), 형태소: 가장 작은 단위의 언어 요소
+# $ docker ps
+# $ docker exec -it [container_id] /bin/bash
+# $ cd /usr/share/elasticsearch/bin/
+# $ ./elasticsearch-plugin install alalysis-nori
+# $ docker compose stop
+# $ docker compose start
+
+#version: '3.7'
+services:
+  es8:
+    image: docker.elastic.co/elasticsearch/elasticsearch:8.7.1
+    container_name: es8
+    environment:
+      - node.name=es8-node
+      - cluster.name=search-cluster
+      - discovery.type=single-node  # 단일 노드 모드
+      - bootstrap.memory_lock=true  # 메모리 스왑 방지
+      - ES_JAVA_OPTS=-Xms1g -Xmx1g  # 최소/최대 힙 메모리 크기 1GB
+      - xpack.security.enabled=false  # 로컬 개발환경에선 xpack 보안기능과 ssl을 비활성
+      - xpack.security.http.ssl.enabled=false
+      - xpack.security.transport.ssl.enabled=false
+    ulimits:
+      memlock:  # 메모리 락 한도 설정
+        soft: -1  # -1 무제한
+        hard: -1
+    volumes:
+      - es8-data:/usr/share/elasticsearch/data
+    ports:
+      - 9200:9200 # https
+      - 9300:9300 # tcp
+    networks:
+      - es8-bridge
+
+  kibana8:
+    image: docker.elastic.co/kibana/kibana:8.7.1
+    container_name: kibana8
+    environment:
+      SERVER_NAME: kibana8
+      ELASTICSEARCH_HOSTS: http://es8:9200  # Elasticsearch 호스트
+    ports:
+      - 5601:5601
+    depends_on:
+      - es8 # es8 서비스 시작후 kibana8 시작
+    networks:
+      - es8-bridge
+
+volumes:
+  es8-data:
+    driver: local
+
+networks:
+  es8-bridge:
+    driver: bridge

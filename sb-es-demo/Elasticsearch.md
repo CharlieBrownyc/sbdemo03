@@ -78,7 +78,7 @@ curl localhost:5601/api/status
     ```
 * docker-compose   
   ```yaml
-  docker compose -f ./es-single-node.yml up
+  docker compose -f ./es-single-node-kibana.yml up
   # build image
   docker compose build <service>
   # docker compose up <service>
