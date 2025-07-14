@@ -1,0 +1,14 @@
+{
+  "properties": {
+    "name": {
+      "type": "text",
+      "analyzer": "autocomplete",
+      "search_analyzer": "standard"
+    },
+    "content": {
+      "type": "text",
+      "analyzer": "autocomplete",
+      "search_analyzer": "standard"
+    }
+  }
+}
