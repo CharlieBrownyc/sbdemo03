@@ -1,0 +1,1 @@
+packageSearchIndex = [{"l":"All Packages","u":"allpackages-index.html"},{"l":"kr.co.brownyc.complete"},{"l":"kr.co.brownyc.complete.controller"},{"l":"kr.co.brownyc.complete.dto"},{"l":"kr.co.brownyc.complete.entity"},{"l":"kr.co.brownyc.complete.repository"},{"l":"kr.co.brownyc.complete.service"},{"l":"kr.co.brownyc.complete.util"}];updateSearchResults();
