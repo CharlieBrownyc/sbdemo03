@@ -55,7 +55,7 @@
 
             // 디바운싱
             timeout = setTimeout(() => {
-                fetch(`/search?query=${encodeURIComponent(query)}`)
+                fetch(`/api/v1/search?query=${encodeURIComponent(query)}`)
                     .then(response => response.json())
                     .then(data => {
                         suggestions.innerHTML = '';

@@ -9,7 +9,7 @@ import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.*;
 
-@Slf4j
+//@Slf4j
 @RequiredArgsConstructor
 @Controller
 public class ProductController {
@@ -19,15 +19,18 @@ public class ProductController {
 
     @GetMapping("/products")
     public String showForm(Model model) {
-        log.info("ProductController:: showForm:");
+//        log.info("ProductController:: showForm:");
+        System.out.println("ProductController:: showForm:");
         model.addAttribute("productDto", new ProductDto());
         return "product";
     }
 
     @PostMapping("/products")
     public String saveProduct(@ModelAttribute("productDto") ProductDto productDto) {
-        log.info("ProductController:: saveProduct:productDto="+productDto.getName());
-        log.info("ProductController:: saveProduct:productDto="+productDto.getContent());
+//        log.info("ProductController:: saveProduct:productDto="+productDto.getName());
+//        log.info("ProductController:: saveProduct:productDto="+productDto.getContent());
+        System.out.println("ProductController:: saveProduct:productDto="+productDto.getName());
+        System.out.println("ProductController:: saveProduct:productDto="+productDto.getContent());
         productSyncService.add(productDto);
         return "redirect:/products";
     }
