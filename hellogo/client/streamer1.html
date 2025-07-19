@@ -1,0 +1,33 @@
+<!DOCTYPE html>
+<html>
+<body>
+<video id="video" autoplay playsinline></video>
+<script>
+const ws = new WebSocket("ws://localhost:8080/ws");
+
+const video = document.getElementById("video");
+
+navigator.mediaDevices.getUserMedia({ video: true })
+    .then(stream => {
+    video.srcObject = stream;
+    const canvas = document.createElement("canvas");
+    const ctx = canvas.getContext("2d");
+
+    setInterval(() => {
+        canvas.width = video.videoWidth;
+        canvas.height = video.videoHeight;
+        ctx.drawImage(video, 0, 0, canvas.width, canvas.height);
+
+        const jpegData = canvas.toDataURL("image/jpeg", 0.6);
+        const payload = {
+        type: "video",
+        timestamp: Date.now(),
+        frame: jpegData
+        };
+
+        ws.send(JSON.stringify(payload));
+    }, 100);
+    });
+</script>
+</body>
+</html>

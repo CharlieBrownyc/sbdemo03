@@ -1,0 +1,107 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Sender</title>
+</head>
+<body>
+<h2>🎥 송신 클라이언트</h2>
+<label>서버 주소: <input id="wsUrl" value="ws://localhost:8090/ws" size="40" /></label>
+<button onclick="connect()">접속</button>
+<button onclick="disconnect()">종료</button>
+<br /><br />
+<video id="video" autoplay playsinline></video>
+
+<script>
+    let ws = null;
+    let videoStream = null;
+    let audioStream = null;
+    let audioCtx, processor, source;
+
+    function connect() {
+        const url = document.getElementById("wsUrl").value;
+        ws = new WebSocket(url);
+
+        ws.onopen = () => {
+            console.log("WebSocket connected");
+
+            navigator.mediaDevices.getUserMedia({ video: true, audio: true })
+                .then(stream => {
+                    videoStream = stream;
+                    document.getElementById("video").srcObject = stream;
+
+                    startVideoStream();
+                    startAudioStream(stream);
+                });
+        };
+
+        ws.onclose = () => {
+            console.log("WebSocket closed");
+            stopAudio();
+        };
+    }
+
+    function disconnect() {
+        if (ws) ws.close();
+    }
+
+    function startVideoStream() {
+        const canvas = document.createElement("canvas");
+        const ctx = canvas.getContext("2d");
+        const video = document.getElementById("video");
+
+        setInterval(() => {
+            if (ws?.readyState === WebSocket.OPEN) {
+                canvas.width = video.videoWidth;
+                canvas.height = video.videoHeight;
+                ctx.drawImage(video, 0, 0, canvas.width, canvas.height);
+                canvas.toBlob(blob => {
+                    if (!blob) {
+                        console.log("Failed to capture blob from canvas. loading video may not be ready.");
+                        return;
+                    }
+                    blob.arrayBuffer().then(buffer => {
+                        const payload = {
+                            type: "video",
+                            timestamp: Date.now(),
+                            frame: "data:image/jpeg;base64," + btoa(String.fromCharCode(...new Uint8Array(buffer)))
+                        };
+                        ws.send(JSON.stringify(payload));
+                    });
+                }, "image/jpeg", 0.6);
+            }
+        }, 100);
+    }
+
+    function startAudioStream(stream) {
+        audioCtx = new AudioContext();
+        processor = audioCtx.createScriptProcessor(2048, 1, 1);
+        source = audioCtx.createMediaStreamSource(stream);
+
+        processor.onaudioprocess = (e) => {
+            if (ws?.readyState === WebSocket.OPEN) {
+                const pcm = e.inputBuffer.getChannelData(0);
+                const int16 = new Int16Array(pcm.length);
+                for (let i = 0; i < pcm.length; i++) {
+                    int16[i] = pcm[i] * 32767;
+                }
+                const b64 = btoa(String.fromCharCode(...new Uint8Array(int16.buffer)));
+                ws.send(JSON.stringify({
+                    type: "audio",
+                    timestamp: Date.now(),
+                    data: b64
+                }));
+            }
+        };
+
+        source.connect(processor);
+        processor.connect(audioCtx.destination);
+    }
+
+    function stopAudio() {
+        if (processor) processor.disconnect();
+        if (source) source.disconnect();
+        if (audioCtx) audioCtx.close();
+    }
+</script>
+</body>
+</html>

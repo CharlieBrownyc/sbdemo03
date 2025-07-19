@@ -1,0 +1,173 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Viewer</title>
+    <style>
+    #frame {
+        border: 1px solid #aaa;
+        width: 640px;
+        height: 480px;
+        background: #000;
+    }
+    #log { font-size: 12px; color: gray; }
+    </style>
+</head>
+<body>
+<h2>📺 뷰어 클라이언트</h2>
+<label>서버 주소: <input id="wsUrl" value="ws://localhost:8090/ws" size="40" /></label>
+<button onclick="connect()">접속</button>
+<button onclick="disconnect()">종료</button>
+<button id="debugToggleBtn">Enable Debug Log</button>
+<br /><br />
+<img id="frame" width="640" height="480" />
+<div id="log"></div>
+
+<script>
+    let DEBUG_LOG = true;
+    let ws = null;
+    let audioCtx = null;
+    let frameBuffer = [];
+    let audioBuffer = [];
+
+    const TARGET_DELAY = 300; // ms
+    let syncStarted = false;
+
+    // log
+    let lastVideoTimestamp = null;
+    let lastAudioTimestamp = null;
+    let syncStats = [];
+
+    function updateSyncStats(syncGap) {
+        syncStats.push(syncGap);
+        if (syncStats.length > 50) syncStats.shift(); // 마지막 50개 유지
+
+        const avg = syncStats.reduce((sum, val) => sum + val, 0) / syncStats.length;
+        console.log(`📊 [AVG SYNC GAP] (last 50): ${avg.toFixed(1)}ms`);
+    }
+
+    function connect() {
+        const url = document.getElementById("wsUrl").value;
+        ws = new WebSocket(url);
+
+        ws.onopen = () => console.log("Connected");
+
+        ws.onmessage = (event) => {
+            const msg = JSON.parse(event.data);
+
+            // log
+            const now = Date.now();
+
+            if (msg.type === "video") {
+                frameBuffer.push(msg);
+                
+                if(DEBUG_LOG) {
+                    const delta = now - msg.timestamp;
+                    console.log(`[VIDEO] ts=${msg.timestamp}, now=${now}, delta=${delta}ms`);
+                    lastVideoTimestamp = msg.timestamp;
+                    
+
+                    if (lastAudioTimestamp !== null) {
+                        const syncGap = msg.timestamp - lastAudioTimestamp;
+                        console.log(
+                            `%c[SYNC] video - audio = ${syncGap}ms`,
+                            `color:${Math.abs(syncGap) > 100 ? 'green' : 'red'}`
+                        );
+                        updateSyncStats(syncGap);
+                    }
+                }
+                
+            }
+
+            if (msg.type === "audio") {
+                audioBuffer.push(msg);
+                if(DEBUG_LOG) {
+                    const delta = now - msg.timestamp;
+                    console.log(
+                    `[AUDIO] ts=${msg.timestamp}, now=${now}, Δ=${delta}ms`
+                    );
+                    lastAudioTimestamp = msg.timestamp;
+                    
+
+                    if (lastVideoTimestamp !== null) {
+                        const syncGap = lastVideoTimestamp - msg.timestamp;
+                        console.log(
+                            `%c[SYNC GAP] video - audio = ${syncGap}ms`,
+                            `color:${Math.abs(syncGap) < 100 ? 'green' : 'red'}`
+                        );
+                        updateSyncStats(syncGap);
+                    }
+                }                
+            }
+
+        };
+
+        ws.onclose = () => {
+            console.log("WebSocket closed");
+        };
+    }
+
+    function disconnect() {
+        if (ws) ws.close();
+    }
+
+    function playAudio(b64) {
+        const binary = atob(b64);
+        const len = binary.length;
+        const buffer = new Int16Array(len);
+        for (let i = 0; i < len; i++) {
+            buffer[i] = binary.charCodeAt(i);
+        }
+
+        const float32 = new Float32Array(buffer.length);
+        for (let i = 0; i < buffer.length; i++) {
+            float32[i] = buffer[i] / 32767;
+        }
+
+        if (!audioCtx) audioCtx = new AudioContext();
+
+        const audioBuffer = audioCtx.createBuffer(1, float32.length, audioCtx.sampleRate);
+        audioBuffer.getChannelData(0).set(float32);
+
+        const source = audioCtx.createBufferSource();
+        source.buffer = audioBuffer;
+        source.connect(audioCtx.destination);
+        source.start();
+    }
+
+    setInterval(() => {
+        const now = Date.now();
+
+        if (!syncStarted) {
+            const oldest = Math.min(
+                frameBuffer.length ? frameBuffer[0].timestamp : Infinity,
+                audioBuffer.length ? audioBuffer[0].timestamp : Infinity
+            );
+
+            if (now - oldest >= TARGET_DELAY) {
+                syncStarted = true;
+                console.log("Sync started");
+            } else {
+                return; // Not enough data yet
+            }
+
+        }
+
+        while (frameBuffer.length && frameBuffer[0].timestamp <= now - TARGET_DELAY) {
+            const frame = frameBuffer.shift();
+            document.getElementById("frame").src = frame.frame;
+        }
+
+        while (audioBuffer.length && audioBuffer[0].timestamp <= now - TARGET_DELAY) {
+            const audio = audioBuffer.shift();
+            playAudio(audio.data);
+        }
+    }, 30);
+    const debugBtn = document.getElementById("debugToggleBtn");
+        debugBtn.addEventListener("click", () => {
+        DEBUG_LOG = !DEBUG_LOG;
+        debugBtn.textContent = DEBUG_LOG ? "Disable Debug Log" : "Enable Debug Log";
+        console.log(`🐛 Debug log ${DEBUG_LOG ? "enabled" : "disabled"}`);
+    });
+</script>
+</body>
+</html>
