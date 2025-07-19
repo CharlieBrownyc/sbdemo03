@@ -1,0 +1,14 @@
+# docker compose up   # first time
+# docker compose start  # next time
+# docker exec -it 82ce952b9db4 /bin/sh  # docker shell
+#version: "3.7"
+services:
+  nginx:
+    image: alfg/nginx-rtmp
+    ports:
+      - "1935:1935"  # RTMP input
+      - "18080:80"    # HLS 서빙
+    volumes:
+      - ./nginx.conf:/etc/nginx/nginx.conf
+      - ./hls:/tmp/hls
+    command: ["nginx", "-g", "daemon off;"]

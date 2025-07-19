@@ -24,15 +24,56 @@
             }
         }
     </style>
+
 </head>
 <body>
 
 <div class="video-container">
-    <video loop autoplay muted playsinline controls >
+    <video id="myVideo" loop autoplay muted playsinline controls >
         not use video
         <source src="/download?fileName=test.mkv" type="video/mp4">
     </video>
 </div>
+<div class="video-list">
+    <table>
+        <thead>
+            <tr>
+                <td>id</td><td>filename</td><td>size</td><td>count</td>
+            </tr>
+        </thead>
+        <tbody>
+            <tr th:each="dto : ${videoList}" th:data-video-src="${dto.getFilename()}">
+                <td th:text="${dto.getId()}">id</td>
+                <td th:text="${dto.getFilename()}">filename</td>
+                <td th:text="${dto.getFilesize()}">size</td>
+                <td th:text="${dtoStat.count}">stat</td>
+            </tr>
+        </tbody>
+    </table>
+</div>
 
+<script>
+    const tableRows = document.querySelectorAll('div table tbody tr');
+    const videoIframe = document.getElementById('myVideo');
+    console.log('script');
+    tableRows.forEach(row => {
+        row.addEventListener('click', () => {
+            const videoSrc = row.dataset.videoSrc;
+            console.log('videoSrc=', videoSrc);
+            const encoded = encodeURIComponent(videoSrc);
+            if (encoded) {
+                // escape(), encodeURI(), encodeURIComponent()
+                videoIframe.src = 'download?fileName=' + encoded;
+            }
+        });
+    });
+    const theadRows = document.querySelectorAll('div table thead tr');
+    theadRows.forEach(row => {
+        row.addEventListener('click', () => {
+           videoIframe.src = '';
+        });
+    });
+
+</script>
 </body>
 </html>

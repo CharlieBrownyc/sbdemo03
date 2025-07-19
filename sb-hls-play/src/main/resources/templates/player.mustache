@@ -1,0 +1,22 @@
+<!DOCTYPE html>
+<html lang="en">
+<head><meta charset="UTF-8">
+    <title>{{title}}</title>
+</head>
+<body>
+<h1>{{title}}</h1>
+<video id="video" controls autoplay width="800"></video>
+<script src="/hls.min.js"></script>
+<script>
+    const v = document.getElementById('video');
+    const src = "{{hlsUrl}}";
+    if (Hls.isSupported()) {
+        const hls = new Hls();
+        hls.loadSource(src);
+        hls.attachMedia(v);
+        hls.on(Hls.Events.MANIFEST_PARSED, () => v.play());
+    } else if (v.canPlayType('application/vnd.apple.mpegurl')) {
+        v.src = src;
+    } else alert("HLS 지원 안됨");
+</script>
+</body></html>

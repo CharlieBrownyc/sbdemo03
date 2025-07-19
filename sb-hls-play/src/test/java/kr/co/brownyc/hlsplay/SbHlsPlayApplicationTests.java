@@ -1,10 +1,10 @@
-package kr.co.grpcexam.streaming;
+package kr.co.brownyc.hlsplay;
 
 import org.junit.jupiter.api.Test;
 import org.springframework.boot.test.context.SpringBootTest;
 
 @SpringBootTest
-class SbSpringStreamingApplicationTests {
+class SbHlsPlayApplicationTests {
 
     @Test
     void contextLoads() {
