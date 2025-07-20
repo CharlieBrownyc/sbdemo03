@@ -20,9 +20,18 @@
 <button id="debugToggleBtn">Enable Debug Log</button>
 <br /><br />
 <img id="frame" width="640" height="480" />
+<div id="chatContainer">
+    <div id="chatMessages" style="height: 200px; overflow-y: scroll; border: 1px solid #ccc;"></div>
+    <input type="text" id="chatInput" placeholder="Type your message..."/>
+    <button id="sendChatBtn">Send</button>
+</div>
 <div id="log"></div>
 
 <script>
+    // chat 기능
+    const sendBtn = document.getElementById("sendChatBtn");
+    const chatInput = document.getElementById("chatInput");
+
     let DEBUG_LOG = true;
     let ws = null;
     let audioCtx = null;
@@ -36,6 +45,24 @@
     let lastVideoTimestamp = null;
     let lastAudioTimestamp = null;
     let syncStats = [];
+
+    chatInput.addEventListener("keydown", (e) => {
+        if (e.key === "Enter") sendBtn.click();
+    });
+
+    sendBtn.addEventListener("click", () => {
+        const text = chatInput.value.trim();
+        if (!text) return;
+
+        const chatMsg = {
+            type: "chat",
+            data: text,
+            timestamp: Date.now()
+        };
+
+        ws.send(JSON.stringify(chatMsg));
+        chatInput.value = "";
+    });
 
     function updateSyncStats(syncGap) {
         syncStats.push(syncGap);
@@ -56,6 +83,15 @@
 
             // log
             const now = Date.now();
+            if (msg.type === "chat") {
+                const div = document.createElement("div");
+                div.textContent = `[${new Date(msg.timestamp).toLocaleTimeString()}] ${msg.data}`;
+                document.getElementById("chatMessages").appendChild(div);
+
+                // 스크롤 맨 아래로
+                const container = document.getElementById("chatMessages");
+                container.scrollTop = container.scrollHeight;
+            }
 
             if (msg.type === "video") {
                 frameBuffer.push(msg);

@@ -10,12 +10,39 @@
 <button onclick="disconnect()">종료</button>
 <br /><br />
 <video id="video" autoplay playsinline></video>
+<div id="chatContainer">
+    <div id="chatMessages" style="height: 200px; overflow-y: scroll; border: 1px solid #ccc;"></div>
+    <input type="text" id="chatInput" placeholder="Type your message..."/>
+    <button id="sendChatBtn">Send</button>
+</div>
+
 
 <script>
     let ws = null;
     let videoStream = null;
     let audioStream = null;
     let audioCtx, processor, source;
+
+    const sendBtn = document.getElementById("sendChatBtn");
+    const chatInput = document.getElementById("chatInput");
+
+    chatInput.addEventListener("keydown", (e) => {
+        if (e.key === "Enter") sendBtn.click();
+    });
+
+    sendBtn.addEventListener("click", () => {
+        const text = chatInput.value.trim();
+        if (!text) return;
+
+        const chatMsg = {
+            type: "chat",
+            data: text,
+            timestamp: Date.now()
+        };
+
+        ws.send(JSON.stringify(chatMsg));
+        chatInput.value = "";
+    });
 
     function connect() {
         const url = document.getElementById("wsUrl").value;
@@ -38,6 +65,23 @@
             console.log("WebSocket closed");
             stopAudio();
         };
+
+        ws.onmessage = (event) => {
+            const msg = JSON.parse(event.data);
+
+            if (msg.type === "chat") {
+                const div = document.createElement("div");
+                div.textContent = `[${new Date(msg.timestamp).toLocaleTimeString()}] ${msg.data}`;
+                document.getElementById("chatMessages").appendChild(div);
+
+                // 스크롤 맨 아래로
+                const container = document.getElementById("chatMessages");
+                container.scrollTop = container.scrollHeight;
+            }
+
+            // ...기존 video/audio 처리도 여기에 같이
+        };
+
     }
 
     function disconnect() {
