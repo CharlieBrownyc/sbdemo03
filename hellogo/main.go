@@ -1,10 +1,11 @@
 package main
 
 import (
-	"github.com/gorilla/websocket"
 	"log"
 	"net/http"
 	"sync"
+
+	"github.com/gorilla/websocket"
 )
 
 var upgrader = websocket.Upgrader{
@@ -40,6 +41,7 @@ func handleWS(w http.ResponseWriter, r *http.Request) {
 		for c := range clients {
 			if c != conn {
 				err := c.WriteMessage(websocket.TextMessage, msg)
+
 				if err != nil {
 					log.Println("write error:", err)
 					c.Close()

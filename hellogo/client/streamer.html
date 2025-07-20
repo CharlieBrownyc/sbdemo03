@@ -18,18 +18,20 @@
 
 
 <script>
+    // chat 기능
+    const sendBtn = document.getElementById("sendChatBtn");
+    const chatInput = document.getElementById("chatInput");
+
     let ws = null;
     let videoStream = null;
     let audioStream = null;
     let audioCtx, processor, source;
-
-    const sendBtn = document.getElementById("sendChatBtn");
-    const chatInput = document.getElementById("chatInput");
-
+    
     chatInput.addEventListener("keydown", (e) => {
         if (e.key === "Enter") sendBtn.click();
     });
 
+    let myID = generateId(); // 브라우저 새로고침마다 달라짐
     sendBtn.addEventListener("click", () => {
         const text = chatInput.value.trim();
         if (!text) return;
@@ -37,12 +39,22 @@
         const chatMsg = {
             type: "chat",
             data: text,
-            timestamp: Date.now()
+            timestamp: Date.now(),
+            uid: myID
         };
 
+        displayChatMessage(chatMsg);
         ws.send(JSON.stringify(chatMsg));
         chatInput.value = "";
     });
+    function displayChatMessage(msg) {
+        const div = document.createElement("div");
+        div.textContent = `[${new Date(msg.timestamp).toLocaleTimeString()}] [${msg.uid || "Unknown"}]나▶ ${msg.data}`;
+        document.getElementById("chatMessages").appendChild(div);
+    }
+    function generateId() {
+        return 'user-' + Math.random().toString(36).substr(2, 9);
+    }
 
     function connect() {
         const url = document.getElementById("wsUrl").value;
@@ -68,10 +80,11 @@
 
         ws.onmessage = (event) => {
             const msg = JSON.parse(event.data);
+            console.log("Received message:", msg);
 
             if (msg.type === "chat") {
                 const div = document.createElement("div");
-                div.textContent = `[${new Date(msg.timestamp).toLocaleTimeString()}] ${msg.data}`;
+                div.textContent = `[${new Date(msg.timestamp).toLocaleTimeString()}] [${msg.uid || "Unknown"}] ${msg.data}`;
                 document.getElementById("chatMessages").appendChild(div);
 
                 // 스크롤 맨 아래로
@@ -107,6 +120,7 @@
                         const payload = {
                             type: "video",
                             timestamp: Date.now(),
+                            uid: myID,
                             frame: "data:image/jpeg;base64," + btoa(String.fromCharCode(...new Uint8Array(buffer)))
                         };
                         ws.send(JSON.stringify(payload));
@@ -132,6 +146,7 @@
                 ws.send(JSON.stringify({
                     type: "audio",
                     timestamp: Date.now(),
+                    uid: myID,
                     data: b64
                 }));
             }
